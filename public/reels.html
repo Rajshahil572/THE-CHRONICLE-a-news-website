@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Reels — The Chronicle</title>
+  <meta name="description" content="Short-form news reels for The Chronicle — immersive vertical news experience">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink:#f0ece4; --ink2:#d4cfc6; --ink3:#9a9590; --ink4:#6a6560;
+      --bg:#0e0d0b; --paper:#1a1916; --surface:#232118; --red:#dc2626; --red2:#b91c1c;
+      --navy:#0a1a35; --gold:#d4a017; --rule:#2e2c27; --rule2:#252320;
+      --serif:'Playfair Display', Georgia, serif; --sans:'Barlow', sans-serif; --cond:'Barlow Condensed', sans-serif;
+      --shadow:0 2px 12px rgba(0,0,0,0.4); --transition:0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --glass-bg: rgba(26, 25, 22, 0.85); --glass-border: rgba(240, 236, 228, 0.1);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.6;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+    }
+
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+    .loading-screen.hide { opacity: 0; pointer-events: none; }
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid var(--rule);
+      border-top: 3px solid var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* News Reels Container */
+    .reels-container {
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      overflow: hidden;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+
+    .reels-container::-webkit-scrollbar { display: none; }
+
+    /* Individual Reel */
+    .reel {
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .reel-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: brightness(0.4) blur(1px);
+      transform: scale(1.1);
+      transition: transform 0.5s ease;
+    }
+
+    .reel-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg,
+        rgba(10, 26, 53, 0.8) 0%,
+        rgba(185, 28, 28, 0.6) 50%,
+        rgba(212, 160, 23, 0.4) 100%);
+      animation: gradientShift 8s ease-in-out infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .reel-content {
+      position: relative;
+      z-index: 10;
+      max-width: 90vw;
+      padding: 20px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      animation: contentFadeIn 0.8s ease-out;
+    }
+
+    @keyframes contentFadeIn {
+      0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .reel-category {
+      display: inline-block;
+      background: var(--red);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-family: var(--cond);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    .reel-headline {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 8vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      color: var(--ink);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .reel-summary {
+      font-size: clamp(1rem, 4vw, 1.2rem);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      color: var(--ink2);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .reel-meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--ink3);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .reel-meta strong { color: var(--ink); }
+
+    /* Action Buttons */
+    .reel-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .action-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: var(--ink);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn:hover {
+      transform: scale(1.1);
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    .action-btn.active {
+      background: var(--red);
+      color: white;
+    }
+
+    .action-btn.like.active {
+      background: var(--red);
+      animation: heartPulse 0.6s ease;
+    }
+
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .read-full-btn {
+      background: var(--gold);
+      color: var(--bg);
+      border: none;
+      padding: 14px 28px;
+      border-radius: 28px;
+      font-family: var(--cond);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(212, 160, 23, 0.3);
+    }
+
+    .read-full-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 160, 23, 0.4);
+    }
+
+    /* Progress Indicator */
+    .progress-container {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 20;
+    }
+
+    .progress-bar {
+      width: 4px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar.active {
+      background: var(--gold);
+    }
+
+    .progress-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--gold);
+      border-radius: 2px;
+      transition: height 0.3s ease;
+    }
+
+    /* Navigation Hints */
+    .nav-hint {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--ink3);
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 15;
+    }
+
+    .nav-hint.show { opacity: 1; }
+
+    .nav-hint.top { bottom: 120px; }
+    .nav-hint.bottom { top: 120px; }
+
+    /* Saved Reels Panel */
+    .saved-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 320px;
+      height: 100vh;
+      background: var(--paper);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 30;
+      border-left: 1px solid var(--rule);
+      overflow-y: auto;
+    }
+
+    .saved-panel.open { transform: translateX(0); }
+
+    .saved-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .saved-title {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .saved-close {
+      background: none;
+      border: none;
+      color: var(--ink3);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .saved-close:hover {
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .saved-reel {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--rule2);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .saved-reel:hover { background: var(--surface); }
+
+    .saved-reel-category {
+      font-family: var(--cond);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 4px;
+    }
+
+    .saved-reel-headline {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .saved-reel-meta {
+      font-size: 11px;
+      color: var(--ink4);
+    }
+
+    /* Skeleton Loading */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, rgba(35, 33, 24, 0.5) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text { height: 16px; margin-bottom: 8px; }
+    .skeleton-text.large { height: 24px; }
+    .skeleton-text.xlarge { height: 32px; }
+    .skeleton-circle { width: 56px; height: 56px; border-radius: 50%; }
+
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+      .reel-content { max-width: 95vw; padding: 16px; }
+      .reel-headline { font-size: clamp(1.5rem, 10vw, 2.5rem); }
+      .progress-container { right: 12px; }
+      .nav-hint { font-size: 11px; padding: 6px 12px; }
+      .saved-panel { width: 280px; }
+    }
+
+    /* AI Features for Reels */
+    .ai-badge { display:inline-block; background:var(--gold); color:var(--bg); padding:2px 8px; border-radius:12px; font-size:10px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; margin-left:8px; }
+    .reel-simplified { background:var(--surface); border-left:3px solid var(--gold); padding:16px; margin:16px 0; border-radius:8px; animation:fadeIn 0.5s ease; }
+    .reel-simplified .label { font-family:var(--cond); font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
+    .reel-summary { background:linear-gradient(135deg, var(--surface) 0%, rgba(212,160,23,0.05) 100%); border:1px solid var(--rule); padding:20px; margin:20px 0; border-radius:12px; position:relative; animation:fadeIn 0.5s ease; }
+    .reel-summary .label { font-family:var(--cond); font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .reel-summary .label i { font-size:16px; }
+    .reel-summary .meta { font-size:11px; color:var(--ink4); margin-bottom:12px; }
+    .ai-loading { display:flex; align-items:center; gap:8px; color:var(--ink3); font-size:13px; padding:8px 0; }
+    .ai-loading i { animation:spin 1s linear infinite; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+
+    /* Ambient Sound Toggle */
+    .ambient-toggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 25;
+    }
+
+    /* Back to Home */
+    .back-home {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 25;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: var(--ink);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 18px;
+    }
+
+    .back-home:hover {
+      background: var(--gold);
+      color: var(--bg);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loading-screen">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Back to Home Button -->
+  <button class="back-home" onclick="window.location.href='index.html'" title="Back to Homepage">
+    <i class="ti ti-home"></i>
+  </button>
+
+  <!-- Ambient Sound Toggle -->
+  <button class="action-btn ambient-toggle" id="ambient-toggle" onclick="toggleAmbientSound()" title="Ambient Sound">
+    <i class="ti ti-volume"></i>
+  </button>
+
+  <!-- Navigation Hints -->
+  <div class="nav-hint top" id="nav-hint-top">Swipe up for next story</div>
+  <div class="nav-hint bottom" id="nav-hint-bottom">Swipe down for previous story</div>
+
+  <!-- Progress Indicator -->
+  <div class="progress-container" id="progress-container"></div>
+
+  <!-- Saved Reels Panel -->
+  <div class="saved-panel" id="saved-panel">
+    <div class="saved-header">
+      <div class="saved-title">Saved Reels</div>
+      <button class="saved-close" onclick="closeSavedPanel()">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <div id="saved-reels-list"></div>
+  </div>
+
+  <!-- Main Reels Container -->
+  <div class="reels-container" id="reels-container"></div>
+
+  <script>
+    // ================== NEWS REELS DATA ==================
+    const NEWS_REELS = [
+      {
+        id: 1,
+        category: "AI & Technology",
+        headline: "AI Governance Summit Reaches Historic Agreement",
+        summary: "World leaders in Geneva have finalized a groundbreaking framework for artificial intelligence regulation, establishing global standards that could reshape the future of technology development and deployment.",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        source: "Global Affairs Desk",
+        time: "2 hours ago",
+        fullArticleId: 0
+      },
+      {
+        id: 2,
+        category: "India",
+        headline: "Monsoon Rains Bring Relief to Drought-Hit Regions",
+        summary: "Heavy rainfall across central India has provided much-needed respite to farmers and communities affected by prolonged dry spells, with meteorologists predicting continued precipitation through the season.",
+        background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+        source: "India Bureau",
+        time: "4 hours ago",
+        fullArticleId: 1
+      },
+      {
+        id: 3,
+        category: "Climate",
+        headline: "Arctic Ice Cap Shows Record Melting This Summer",
+        summary: "Scientists report unprecedented ice loss in the Arctic region, with satellite data showing 20% more melting than previous records, raising urgent concerns about rising sea levels and global climate patterns.",
+        background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+        source: "Climate Watch",
+        time: "6 hours ago",
+        fullArticleId: 2
+      },
+      {
+        id: 4,
+        category: "Space",
+        headline: "NASA's Artemis Mission Successfully Launches",
+        summary: "The Artemis II mission has successfully departed Earth orbit, carrying four astronauts toward the Moon in preparation for establishing a sustainable human presence on lunar soil by 2026.",
+        background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+        source: "Space Desk",
+        time: "8 hours ago",
+        fullArticleId: 3
+      },
+      {
+        id: 5,
+        category: "Economy",
+        headline: "Global Markets Rally on Trade Agreement",
+        summary: "Stock markets worldwide surged following the announcement of a comprehensive trade deal between major economic powers, with analysts predicting sustained growth in international commerce.",
+        background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+        source: "Financial Times",
+        time: "10 hours ago",
+        fullArticleId: 4
+      },
+      {
+        id: 6,
+        category: "Sports",
+        headline: "Championship Final Goes to Extra Time",
+        summary: "In a thrilling display of athletic prowess, the championship match extended into extra time before a dramatic goal decided the winner, capping an unforgettable season for both teams.",
+        background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+        source: "Sports Central",
+        time: "12 hours ago",
+        fullArticleId: 5
+      },
+      {
+        id: 7,
+        category: "Science",
+        headline: "Breakthrough in Quantum Computing Achieved",
+        summary: "Researchers have successfully demonstrated quantum supremacy in a practical application, marking a significant milestone in computational science and opening new frontiers in complex problem-solving.",
+        background: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+        source: "Science Today",
+        time: "14 hours ago",
+        fullArticleId: 6
+      },
+      {
+        id: 8,
+        category: "Politics",
+        headline: "Parliament Passes Landmark Healthcare Reform",
+        summary: "After months of intense debate, lawmakers have approved comprehensive healthcare legislation that promises to expand coverage and reduce costs for millions of citizens nationwide.",
+        background: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+        source: "Political Desk",
+        time: "16 hours ago",
+        fullArticleId: 7
+      },
+      {
+        id: 9,
+        category: "Culture",
+        headline: "International Film Festival Opens with Record Attendance",
+        summary: "The annual international film festival has begun with unprecedented crowds, showcasing cinematic works from around the globe and celebrating the art of storytelling through motion pictures.",
+        background: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+        source: "Arts & Culture",
+        time: "18 hours ago",
+        fullArticleId: 8
+      },
+      {
+        id: 10,
+        category: "Health",
+        headline: "New Vaccine Shows Promising Results in Trials",
+        summary: "Clinical trials for a novel vaccine candidate have demonstrated remarkable efficacy rates, offering hope for combating a major global health challenge that has affected millions worldwide.",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        source: "Health Watch",
+        time: "20 hours ago",
+        fullArticleId: 9
+      }
+    ];
+
+    // ================== STATE MANAGEMENT ==================
+    let currentReelIndex = 0;
+    let isPlaying = true;
+    let isMuted = false;
+    let likedReels = JSON.parse(localStorage.getItem('likedReels') || '[]');
+    let savedReels = JSON.parse(localStorage.getItem('savedReels') || '[]');
+    let speechSynthesis = window.speechSynthesis;
+    let currentUtterance = null;
+    let ambientAudio = null;
+    let isAmbientPlaying = false;
+
+    // ================== UTILITY FUNCTIONS ==================
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'nav-hint';
+      toast.textContent = message;
+      toast.style.position = 'fixed';
+      toast.style.bottom = '40px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.zIndex = '1000';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // ================== AUDIO SYSTEM ==================
+    function speakReel(reel) {
+      if (!speechSynthesis) return;
+
+      // Stop current narration
+      if (currentUtterance) {
+        speechSynthesis.cancel();
+      }
+
+      if (isMuted) return;
+
+      const text = `${reel.category}. ${reel.headline}. ${reel.summary}`;
+      currentUtterance = new SpeechSynthesisUtterance(text);
+
+      // Configure voice
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice =>
+        voice.lang.startsWith('en') &&
+        (voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Google'))
+      );
+      if (preferredVoice) {
+        currentUtterance.voice = preferredVoice;
+      }
+
+      currentUtterance.rate = 0.9;
+      currentUtterance.pitch = 1;
+      currentUtterance.volume = 0.8;
+
+      speechSynthesis.speak(currentUtterance);
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      const muteBtn = document.querySelector('.action-btn[onclick*="toggleMute"]');
+      if (muteBtn) {
+        muteBtn.innerHTML = isMuted ? '<i class="ti ti-volume-off"></i>' : '<i class="ti ti-volume"></i>';
+        muteBtn.classList.toggle('active', isMuted);
+      }
+
+      if (isMuted && currentUtterance) {
+        speechSynthesis.cancel();
+      } else if (!isMuted) {
+        const currentReel = NEWS_REELS[currentReelIndex];
+        speakReel(currentReel);
+      }
+    }
+
+    function toggleAmbientSound() {
+      const ambientBtn = document.getElementById('ambient-toggle');
+
+      if (isAmbientPlaying) {
+        if (ambientAudio) {
+          ambientAudio.pause();
+          ambientAudio = null;
+        }
+        isAmbientPlaying = false;
+        ambientBtn.innerHTML = '<i class="ti ti-volume"></i>';
+        ambientBtn.classList.remove('active');
+      } else {
+        // Create ambient sound (simple oscillator for demo)
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3 note
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.05, audioContext.currentTime); // Very quiet
+
+        oscillator.start();
+        ambientAudio = { oscillator, gainNode, audioContext };
+
+        isAmbientPlaying = true;
+        ambientBtn.innerHTML = '<i class="ti ti-volume-off"></i>';
+        ambientBtn.classList.add('active');
+      }
+    }
+
+    // ================== LIKE & SAVE SYSTEM ==================
+    function toggleLike(reelId) {
+      const index = likedReels.indexOf(reelId);
+      const likeBtn = document.querySelector(`.action-btn.like[data-reel="${reelId}"]`);
+
+      if (index > -1) {
+        likedReels.splice(index, 1);
+        if (likeBtn) likeBtn.classList.remove('active');
+      } else {
+        likedReels.push(reelId);
+        if (likeBtn) {
+          likeBtn.classList.add('active');
+          // Track category preference
+          const reel = NEWS_REELS.find(r => r.id === reelId);
+          if (reel) {
+            updateCategoryPreferences(reel.category);
+          }
+        }
+      }
+
+      localStorage.setItem('likedReels', JSON.stringify(likedReels));
+      updateSavedReelsPanel();
+    }
+
+    function toggleBookmark(reelId) {
+      const index = savedReels.indexOf(reelId);
+      const bookmarkBtn = document.querySelector(`.action-btn.bookmark[data-reel="${reelId}"]`);
+
+      if (index > -1) {
+        savedReels.splice(index, 1);
+        if (bookmarkBtn) bookmarkBtn.classList.remove('active');
+      } else {
+        savedReels.push(reelId);
+        if (bookmarkBtn) bookmarkBtn.classList.add('active');
+      }
+
+      localStorage.setItem('savedReels', JSON.stringify(savedReels));
+      updateSavedReelsPanel();
+    }
+
+    function updateCategoryPreferences(category) {
+      const prefs = JSON.parse(localStorage.getItem('categoryPreferences') || '{}');
+      prefs[category] = (prefs[category] || 0) + 1;
+      localStorage.setItem('categoryPreferences', JSON.stringify(prefs));
+    }
+
+    // ================== NAVIGATION ==================
+    function navigateToReel(index, direction = 'instant') {
+      if (index < 0 || index >= NEWS_REELS.length) return;
+
+      const container = document.getElementById('reels-container');
+      const reelElements = document.querySelectorAll('.reel');
+
+      if (reelElements[index]) {
+        // Stop current narration
+        if (currentUtterance) {
+          speechSynthesis.cancel();
+        }
+
+        // Update current index
+        currentReelIndex = index;
+
+        // Scroll to reel
+        if (direction === 'smooth') {
+          reelElements[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          container.scrollTop = index * window.innerHeight;
+        }
+
+        // Start narration for new reel
+        setTimeout(() => {
+          const currentReel = NEWS_REELS[currentReelIndex];
+          speakReel(currentReel);
+        }, 300);
+
+        // Update progress
+        updateProgressBars();
+
+        // Show navigation hints briefly
+        showNavigationHints();
+      }
+    }
+
+    function showNavigationHints() {
+      const topHint = document.getElementById('nav-hint-top');
+      const bottomHint = document.getElementById('nav-hint-bottom');
+
+      if (currentReelIndex > 0) {
+        bottomHint.classList.add('show');
+        setTimeout(() => bottomHint.classList.remove('show'), 2000);
+      }
+
+      if (currentReelIndex < NEWS_REELS.length - 1) {
+        topHint.classList.add('show');
+        setTimeout(() => topHint.classList.remove('show'), 2000);
+      }
+    }
+
+    // ================== PROGRESS INDICATOR ==================
+    function createProgressBars() {
+      const container = document.getElementById('progress-container');
+      container.innerHTML = '';
+
+      NEWS_REELS.forEach((reel, index) => {
+        const bar = document.createElement('div');
+        bar.className = 'progress-bar';
+        bar.onclick = () => navigateToReel(index, 'smooth');
+
+        const fill = document.createElement('div');
+        fill.className = 'progress-fill';
+        bar.appendChild(fill);
+
+        container.appendChild(bar);
+      });
+
+      updateProgressBars();
+    }
+
+    function updateProgressBars() {
+      const bars = document.querySelectorAll('.progress-bar');
+      bars.forEach((bar, index) => {
+        const fill = bar.querySelector('.progress-fill');
+        if (index === currentReelIndex) {
+          bar.classList.add('active');
+          fill.style.height = '100%';
+        } else if (index < currentReelIndex) {
+          bar.classList.remove('active');
+          fill.style.height = '100%';
+        } else {
+          bar.classList.remove('active');
+          fill.style.height = '0%';
+        }
+      });
+    }
+
+    // ================== RENDERING ==================
+    function createReelElement(reel, index) {
+      const reelDiv = document.createElement('div');
+      reelDiv.className = 'reel';
+      reelDiv.id = `reel-${reel.id}`;
+
+      reelDiv.innerHTML = `
+        <div class="reel-bg" style="background: ${reel.background}"></div>
+        <div class="reel-gradient"></div>
+        <div class="reel-content">
+          <div class="reel-category">${reel.category}</div>
+          <div class="reel-headline">${reel.headline}</div>
+          <div class="reel-summary">${reel.summary}</div>
+          <div class="reel-meta">
+            <span><strong>${reel.source}</strong></span>
+            <span>•</span>
+            <span>${reel.time}</span>
+          </div>
+          <div class="reel-actions">
+            <button class="action-btn like ${likedReels.includes(reel.id) ? 'active' : ''}"
+                    data-reel="${reel.id}"
+                    onclick="toggleLike(${reel.id})"
+                    title="Like this reel">
+              <i class="ti ti-heart"></i>
+            </button>
+            <button class="action-btn bookmark ${savedReels.includes(reel.id) ? 'active' : ''}"
+                    data-reel="${reel.id}"
+                    onclick="toggleBookmark(${reel.id})"
+                    title="Save this reel">
+              <i class="ti ti-bookmark"></i>
+            </button>
+            <button class="action-btn" onclick="shareReel(${reel.id})" title="Share this reel">
+              <i class="ti ti-share"></i>
+            </button>
+            <button class="action-btn" onclick="toggleMute()" title="Toggle narration">
+              <i class="ti ti-volume${isMuted ? '-off' : ''}"></i>
+            </button>
+            <button class="action-btn" onclick="simplifyReel(${reel.id})" title="Simplify language">
+              <i class="ti ti-text-wrap"></i>
+            </button>
+            <button class="action-btn" onclick="summarizeReel(${reel.id})" title="AI summary">
+              <i class="ti ti-file-text"></i>
+            </button>
+          </div>
+          <button class="read-full-btn" onclick="readFullArticle(${reel.fullArticleId})">
+            Read Full Article
+          </button>
+        </div>
+      `;
+
+      return reelDiv;
+    }
+
+    function renderReels() {
+      const container = document.getElementById('reels-container');
+      container.innerHTML = '';
+
+      NEWS_REELS.forEach((reel, index) => {
+        const reelElement = createReelElement(reel, index);
+        container.appendChild(reelElement);
+      });
+
+      createProgressBars();
+    }
+
+    function updateSavedReelsPanel() {
+      const list = document.getElementById('saved-reels-list');
+      list.innerHTML = '';
+
+      if (savedReels.length === 0) {
+        list.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--ink3);">No saved reels yet</div>';
+        return;
+      }
+
+      savedReels.forEach(reelId => {
+        const reel = NEWS_REELS.find(r => r.id === reelId);
+        if (reel) {
+          const item = document.createElement('div');
+          item.className = 'saved-reel';
+          item.onclick = () => {
+            navigateToReel(NEWS_REELS.indexOf(reel), 'smooth');
+            closeSavedPanel();
+          };
+
+          item.innerHTML = `
+            <div class="saved-reel-category">${reel.category}</div>
+            <div class="saved-reel-headline">${reel.headline}</div>
+            <div class="saved-reel-meta">${reel.source} • ${reel.time}</div>
+          `;
+
+          list.appendChild(item);
+        }
+      });
+    }
+
+    // ================== EVENT HANDLERS ==================
+    function handleScroll() {
+      const container = document.getElementById('reels-container');
+      const scrollTop = container.scrollTop;
+      const reelHeight = window.innerHeight;
+      const newIndex = Math.round(scrollTop / reelHeight);
+
+      if (newIndex !== currentReelIndex && newIndex >= 0 && newIndex < NEWS_REELS.length) {
+        currentReelIndex = newIndex;
+        updateProgressBars();
+
+        // Start narration for new reel
+        const currentReel = NEWS_REELS[currentReelIndex];
+        speakReel(currentReel);
+      }
+    }
+
+    function handleKeyPress(event) {
+      switch(event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          navigateToReel(Math.max(0, currentReelIndex - 1), 'smooth');
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          navigateToReel(Math.min(NEWS_REELS.length - 1, currentReelIndex + 1), 'smooth');
+          break;
+        case ' ':
+          event.preventDefault();
+          toggleMute();
+          break;
+        case 'l':
+        case 'L':
+          event.preventDefault();
+          toggleLike(NEWS_REELS[currentReelIndex].id);
+          break;
+        case 'm':
+        case 'M':
+          event.preventDefault();
+          toggleMute();
+          break;
+        case 'Escape':
+          if (document.getElementById('saved-panel').classList.contains('open')) {
+            closeSavedPanel();
+          }
+          break;
+      }
+    }
+
+    function handleTouchStart(event) {
+      this.startY = event.touches[0].clientY;
+      this.startTime = Date.now();
+    }
+
+    function handleTouchEnd(event) {
+      if (!this.startY) return;
+
+      const endY = event.changedTouches[0].clientY;
+      const deltaY = this.startY - endY;
+      const deltaTime = Date.now() - this.startTime;
+      const velocity = Math.abs(deltaY) / deltaTime;
+
+      // Minimum swipe distance and velocity
+      if (Math.abs(deltaY) > 50 && velocity > 0.3) {
+        if (deltaY > 0) {
+          // Swipe up - next reel
+          navigateToReel(Math.min(NEWS_REELS.length - 1, currentReelIndex + 1), 'smooth');
+        } else {
+          // Swipe down - previous reel
+          navigateToReel(Math.max(0, currentReelIndex - 1), 'smooth');
+        }
+      }
+
+      this.startY = null;
+    }
+
+    function handleWheel(event) {
+      event.preventDefault();
+
+      if (Math.abs(event.deltaY) > 50) {
+        if (event.deltaY > 0) {
+          // Scroll down - next reel
+          navigateToReel(Math.min(NEWS_REELS.length - 1, currentReelIndex + 1), 'smooth');
+        } else {
+          // Scroll up - previous reel
+          navigateToReel(Math.max(0, currentReelIndex - 1), 'smooth');
+        }
+      }
+    }
+
+    // ================== ACTION FUNCTIONS ==================
+    function shareReel(reelId) {
+      const reel = NEWS_REELS.find(r => r.id === reelId);
+      if (reel && navigator.share) {
+        navigator.share({
+          title: reel.headline,
+          text: reel.summary,
+          url: window.location.href
+        });
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(`${reel.headline}\n\n${reel.summary}\n\n${window.location.href}`);
+        showToast('Link copied to clipboard!');
+      }
+    }
+
+    async function simplifyReel(reelId) {
+      const reel = NEWS_REELS.find(r => r.id === reelId);
+      if (!reel) return;
+
+      const reelElement = document.querySelector(`#reel-${reel.id} .reel-content`);
+      if (!reelElement) return;
+
+      // Show loading state
+      const simplifyBtn = document.querySelector(`[onclick="simplifyReel(${reelId})"]`);
+      const originalIcon = simplifyBtn.innerHTML;
+      simplifyBtn.innerHTML = '<i class="ti ti-loader"></i>';
+      simplifyBtn.disabled = true;
+
+      try {
+        const response = await fetch('http://localhost:8080/api/simplify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `${reel.headline}. ${reel.summary}`,
+            language: 'en'
+          })
+        });
+
+        if (!response.ok) throw new Error('API request failed');
+
+        const data = await response.json();
+
+        // Create simplified content display
+        const simplifiedDiv = document.createElement('div');
+        simplifiedDiv.className = 'reel-simplified';
+        simplifiedDiv.innerHTML = `
+          <div class="label">Simplified <span class="ai-badge">AI</span></div>
+          <div><strong>${data.simplified.split('.')[0]}</strong></div>
+          <div>${data.simplified.split('.').slice(1).join('.')}</div>
+        `;
+
+        // Insert after reel summary
+        const reelSummary = reelElement.querySelector('.reel-summary');
+        if (reelSummary) {
+          reelSummary.insertAdjacentElement('afterend', simplifiedDiv);
+        }
+
+        showToast('Reel simplified successfully!');
+
+      } catch (error) {
+        console.error('Simplify error:', error);
+        showToast('Failed to simplify reel');
+
+        // Fallback
+        const simplifiedDiv = document.createElement('div');
+        simplifiedDiv.className = 'reel-simplified';
+        simplifiedDiv.innerHTML = `
+          <div class="label">Simplified <span class="ai-badge">AI</span></div>
+          <div>Unable to connect to AI service. Please check server configuration.</div>
+        `;
+
+        const reelSummary = reelElement.querySelector('.reel-summary');
+        if (reelSummary) {
+          reelSummary.insertAdjacentElement('afterend', simplifiedDiv);
+        }
+      } finally {
+        // Reset button
+        simplifyBtn.innerHTML = originalIcon;
+        simplifyBtn.disabled = false;
+      }
+    }
+
+    async function summarizeReel(reelId) {
+      const reel = NEWS_REELS.find(r => r.id === reelId);
+      if (!reel) return;
+
+      const reelElement = document.querySelector(`#reel-${reel.id} .reel-content`);
+      if (!reelElement) return;
+
+      // Show loading state
+      const summarizeBtn = document.querySelector(`[onclick="summarizeReel(${reelId})"]`);
+      const originalIcon = summarizeBtn.innerHTML;
+      summarizeBtn.innerHTML = '<i class="ti ti-loader"></i>';
+      summarizeBtn.disabled = true;
+
+      // Add loading indicator
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'ai-loading';
+      loadingDiv.innerHTML = '<i class="ti ti-loader"></i> Generating AI summary...';
+
+      const reelSummary = reelElement.querySelector('.reel-summary');
+      if (reelSummary) {
+        reelSummary.insertAdjacentElement('afterend', loadingDiv);
+      }
+
+      try {
+        const response = await fetch('http://localhost:8080/api/summarize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: reel.headline,
+            content: reel.summary,
+            category: reel.category,
+            language: 'en',
+            summaryLength: 'short'
+          })
+        });
+
+        if (!response.ok) throw new Error('API request failed');
+
+        const data = await response.json();
+
+        // Remove loading indicator
+        loadingDiv.remove();
+
+        // Create summary display
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'reel-summary';
+        summaryDiv.innerHTML = `
+          <div class="label">
+            <i class="ti ti-file-text"></i>
+            AI Summary
+            <span class="ai-badge">AI</span>
+          </div>
+          <div class="meta">${data.wordCount} words • ${new Date(data.generatedAt).toLocaleTimeString()}</div>
+          <div>${data.summary}</div>
+        `;
+
+        // Insert after reel summary
+        if (reelSummary) {
+          reelSummary.insertAdjacentElement('afterend', summaryDiv);
+        }
+
+        showToast('AI summary generated!');
+
+      } catch (error) {
+        console.error('Summarize error:', error);
+
+        // Remove loading indicator
+        loadingDiv.remove();
+
+        showToast('Failed to generate summary');
+
+        // Fallback
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'reel-summary';
+        summaryDiv.innerHTML = `
+          <div class="label">
+            <i class="ti ti-file-text"></i>
+            AI Summary
+            <span class="ai-badge">AI</span>
+          </div>
+          <div class="meta">Unable to connect to AI service</div>
+          <div>Please check your server configuration to enable AI summaries.</div>
+        `;
+
+        if (reelSummary) {
+          reelSummary.insertAdjacentElement('afterend', summaryDiv);
+        }
+      } finally {
+        // Reset button
+        summarizeBtn.innerHTML = originalIcon;
+        summarizeBtn.disabled = false;
+      }
+    }
+
+    function readFullArticle(articleId) {
+      // This would redirect to the full article on the main site
+      window.location.href = `index.html?article=${articleId}`;
+    }
+
+    function openSavedPanel() {
+      document.getElementById('saved-panel').classList.add('open');
+    }
+
+    function closeSavedPanel() {
+      document.getElementById('saved-panel').classList.remove('open');
+    }
+
+    // ================== INITIALIZATION ==================
+    function init() {
+      // Hide loading screen
+      setTimeout(() => {
+        document.getElementById('loading-screen').classList.add('hide');
+      }, 1000);
+
+      // Render reels
+      renderReels();
+      updateSavedReelsPanel();
+
+      // Set up event listeners
+      const container = document.getElementById('reels-container');
+
+      // Scroll handling
+      container.addEventListener('scroll', debounce(handleScroll, 100));
+
+      // Touch handling
+      container.addEventListener('touchstart', handleTouchStart, { passive: true });
+      container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+      // Wheel handling
+      container.addEventListener('wheel', handleWheel, { passive: false });
+
+      // Keyboard handling
+      document.addEventListener('keydown', handleKeyPress);
+
+      // Start with first reel
+      setTimeout(() => {
+        const firstReel = NEWS_REELS[0];
+        speakReel(firstReel);
+      }, 1500);
+
+      // Add saved reels button to actions
+      const actions = document.querySelectorAll('.reel-actions');
+      actions.forEach(actionGroup => {
+        const savedBtn = document.createElement('button');
+        savedBtn.className = 'action-btn';
+        savedBtn.onclick = openSavedPanel;
+        savedBtn.title = 'View saved reels';
+        savedBtn.innerHTML = '<i class="ti ti-bookmarks"></i>';
+        actionGroup.insertBefore(savedBtn, actionGroup.lastElementChild);
+      });
+    }
+
+    // Start the app
+    document.addEventListener('DOMContentLoaded', init);
+
+    // Handle visibility change (pause/resume narration)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (currentUtterance) {
+          speechSynthesis.pause();
+        }
+      } else {
+        if (currentUtterance && !isMuted) {
+          speechSynthesis.resume();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
