@@ -1,12 +1,15 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = "YOUR_OPENAI_API_KEY";
+const API_KEY = process.env.OPENAI_API_KEY || "YOUR_OPENAI_API_KEY";
 
 app.post("/api/ask", async (req, res) => {
   const { question, language } = req.body;
@@ -92,6 +95,10 @@ Rules:
 
     const data = await response.json();
 
+    if (!response.ok || !data.choices || !data.choices[0]) {
+      throw new Error(`OpenAI API error: ${data.error?.message || 'Invalid response'}`);
+    }
+
     res.json({
       simplified: data.choices[0].message.content,
       originalLength: text.length,
@@ -162,6 +169,10 @@ Please create a comprehensive summary of this news article.`
     });
 
     const data = await response.json();
+
+    if (!response.ok || !data.choices || !data.choices[0]) {
+      throw new Error(`OpenAI API error: ${data.error?.message || 'Invalid response'}`);
+    }
 
     res.json({
       summary: data.choices[0].message.content,

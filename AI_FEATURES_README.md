@@ -106,10 +106,21 @@ Generates AI-powered article summaries.
 - **CORS**: Cross-origin request handling
 
 ### Configuration
-Set your OpenAI API key in `server.js`:
-```javascript
-const API_KEY = "your-openai-api-key-here";
+Set your OpenAI API key in the `.env` file:
+
+```bash
+OPENAI_API_KEY=sk-your-actual-openai-api-key-here
 ```
+
+**Important:** Replace `your-openai-api-key-here` with your actual OpenAI API key. The AI features will not work without a valid API key.
+
+### Testing Without API Key
+If no API key is configured, the APIs will return the original content as fallback. To test with real AI processing:
+
+1. Get an OpenAI API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Add it to your `.env` file
+3. Restart the server: `node server.js`
+4. Run tests: `node test-ai.js`
 
 ### Error Handling
 - Graceful fallbacks when AI service unavailable

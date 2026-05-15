@@ -13,10 +13,29 @@ const testSimplify = async () => {
     });
 
     const data = await response.json();
-    console.log('✅ Simplify API working:');
-    console.log('Original length:', data.originalLength);
-    console.log('Simplified length:', data.simplifiedLength);
-    console.log('Simplified text:', data.simplified);
+
+    if (data.error) {
+      console.log('❌ Simplify API error:', data.error);
+      console.log('🔄 Fallback: Returning original text');
+      console.log('Simplified text:', data.simplified.substring(0, 100) + '...');
+      return;
+    }
+
+    // Check if it's returning original text (fallback mode)
+    const originalText = "The Intergovernmental Panel on Climate Change (IPCC) has issued a dire warning about anthropogenic climate change, stating that immediate mitigation strategies must be implemented to avert catastrophic consequences.";
+    const isFallback = data.simplified === originalText;
+
+    if (isFallback) {
+      console.log('⚠️  Simplify API in fallback mode (no API key configured)');
+      console.log('Original length:', data.originalLength || 'N/A');
+      console.log('Simplified length:', data.simplifiedLength || 'N/A');
+      console.log('Simplified text:', data.simplified.substring(0, 100) + '...');
+    } else {
+      console.log('✅ Simplify API working with AI:');
+      console.log('Original length:', data.originalLength);
+      console.log('Simplified length:', data.simplifiedLength);
+      console.log('Simplified text:', data.simplified);
+    }
   } catch (error) {
     console.log('❌ Simplify API error:', error.message);
   }
@@ -37,9 +56,26 @@ const testSummarize = async () => {
     });
 
     const data = await response.json();
-    console.log('✅ Summarize API working:');
-    console.log('Word count:', data.wordCount);
-    console.log('Summary:', data.summary);
+
+    if (data.error) {
+      console.log('❌ Summarize API error:', data.error);
+      console.log('🔄 Fallback: Returning truncated content');
+      console.log('Summary:', data.summary);
+      return;
+    }
+
+    // Check if it's returning truncated content (fallback mode)
+    const isFallback = data.summary.startsWith("Scientists have developed a new artificial intelligence system");
+
+    if (isFallback) {
+      console.log('⚠️  Summarize API in fallback mode (no API key configured)');
+      console.log('Word count:', data.wordCount || 'N/A');
+      console.log('Summary:', data.summary);
+    } else {
+      console.log('✅ Summarize API working with AI:');
+      console.log('Word count:', data.wordCount);
+      console.log('Summary:', data.summary);
+    }
   } catch (error) {
     console.log('❌ Summarize API error:', error.message);
   }
