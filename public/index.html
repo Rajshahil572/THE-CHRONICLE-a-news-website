@@ -315,7 +315,7 @@
   <div class="mast-top">
     <div class="mast-left">
       <div class="mast-date">Friday, 15 May 2026</div>
-      <div class="mast-edition">Global Edition · Vol. III, No. 135</div>
+      <div class="mast-edition">Tula's university, Dehradun,248011</div>
     </div>
     <div class="mast-center">
       <div class="logo-name" id="ui-logo">THE CHRONICLE</div>
@@ -871,12 +871,12 @@
     if (!q) return;
     const ans = document.getElementById('ai-answer'); ans.style.display = 'block'; ans.textContent = 'Analyzing your question...';
     try {
-      const res = await fetch('http://localhost:8080/api/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ question:q, language: currentLanguage }) });
+      const res = await fetch('/api/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ question:q, language: currentLanguage }) });
       if (!res.ok) throw new Error('Bad response');
       const data = await res.json();
       ans.textContent = data.answer || 'No answer returned.';
     } catch (e) {
-      ans.textContent = 'Backend not configured yet. Add the Node.js server below and deploy it on Cloud Run or Firebase Functions.';
+      ans.textContent = 'Backend not reachable. Please configure Netlify Functions and OPENAI_API_KEY.';
     }
   }
   document.getElementById('ask-input').addEventListener('keydown', e => { if (e.key === 'Enter') askAI(); });
@@ -898,7 +898,7 @@
     simplifyBtn.disabled = true;
 
     try {
-      const response = await fetch('http://localhost:8080/api/simplify', {
+      const response = await fetch('/api/simplify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -907,9 +907,8 @@
         })
       });
 
-      if (!response.ok) throw new Error('API request failed');
-
       const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error || 'API request failed');
 
       // Create simplified content display
       const simplifiedDiv = document.createElement('div');
@@ -929,7 +928,7 @@
 
     } catch (error) {
       console.error('Simplify error:', error);
-      showToast('Failed to simplify article. Please try again.');
+      showToast(`Failed to simplify article. ${error.message}`);
 
       // Fallback: show a basic simplified version
       const simplifiedDiv = document.createElement('div');
@@ -973,7 +972,7 @@
     modalText.insertAdjacentElement('afterend', loadingDiv);
 
     try {
-      const response = await fetch('http://localhost:8080/api/summarize', {
+      const response = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -985,9 +984,8 @@
         })
       });
 
-      if (!response.ok) throw new Error('API request failed');
-
       const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error || 'API request failed');
 
       // Remove loading indicator
       loadingDiv.remove();
@@ -1019,7 +1017,7 @@
       // Remove loading indicator
       loadingDiv.remove();
 
-      showToast('Failed to generate summary. Please try again.');
+      showToast(`Failed to generate summary. ${error.message}`);
 
       // Fallback: show a basic summary
       const summaryDiv = document.createElement('div');

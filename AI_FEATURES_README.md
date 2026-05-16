@@ -112,11 +112,18 @@ Set your OpenAI API key in the `.env` file:
 OPENAI_API_KEY=sk-your-actual-openai-api-key-here
 ```
 
-**Important:** Replace `your-openai-api-key-here` with your actual OpenAI API key. The AI features will not work without a valid API key.
+**Important:** Replace `sk-your-actual-openai-api-key-here` with your actual OpenAI API key.
+
+If the API key is missing or still set to the placeholder value, the server will return a clear error and AI requests will fail.
+
+### Testing With a Valid API Key
+1. Get an OpenAI API key from https://platform.openai.com/api-keys
+2. Add it to your `.env` file
+3. Restart the server: `node server.js`
+4. Run tests: `node test-ai.js`
 
 ### Testing Without API Key
-If no API key is configured, the APIs will return the original content as fallback. To test with real AI processing:
-
+If no API key is configured, the API endpoints will return fallback responses instead of real AI content.
 1. Get an OpenAI API key from [OpenAI Platform](https://platform.openai.com/api-keys)
 2. Add it to your `.env` file
 3. Restart the server: `node server.js`

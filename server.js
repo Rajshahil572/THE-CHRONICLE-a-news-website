@@ -10,8 +10,19 @@ app.use(cors());
 app.use(express.json());
 
 const API_KEY = process.env.OPENAI_API_KEY || "YOUR_OPENAI_API_KEY";
+const isApiKeyConfigured = API_KEY && API_KEY !== "YOUR_OPENAI_API_KEY";
+const requireOpenAiKey = (res) => res.status(500).json({
+  error: "OpenAI API key not configured. Please set OPENAI_API_KEY in .env and restart the server."
+});
+
+if (!isApiKeyConfigured) {
+  console.warn("WARNING: OPENAI_API_KEY is not configured or is set to the placeholder value. AI features will not work until a valid key is provided.");
+}
 
 app.post("/api/ask", async (req, res) => {
+  if (!isApiKeyConfigured) {
+    return requireOpenAiKey(res);
+  }
   const { question, language } = req.body;
 
   try {
@@ -54,6 +65,10 @@ app.post("/api/ask", async (req, res) => {
 
 // ================== SIMPLIFY NEWS LANGUAGE ==================
 app.post("/api/simplify", async (req, res) => {
+  if (!isApiKeyConfigured) {
+    return requireOpenAiKey(res);
+  }
+
   const { text, language } = req.body;
 
   if (!text) {
@@ -95,8 +110,16 @@ Rules:
 
     const data = await response.json();
 
-    if (!response.ok || !data.choices || !data.choices[0]) {
-      throw new Error(`OpenAI API error: ${data.error?.message || 'Invalid response'}`);
+    if (!response.ok) {
+      console.error("OpenAI simplify API returned an error:", data);
+      return res.status(response.status).json({
+        error: data.error?.message || 'OpenAI simplify API error',
+        details: data
+      });
+    }
+
+    if (!data.choices || !data.choices[0]) {
+      throw new Error('Invalid OpenAI simplify response');
     }
 
     res.json({
@@ -108,7 +131,7 @@ Rules:
   } catch (error) {
     console.error("Simplify API error:", error);
     res.status(500).json({
-      error: "Failed to simplify text",
+      error: error.message || "Failed to simplify text",
       simplified: text // fallback to original text
     });
   }
@@ -116,6 +139,10 @@ Rules:
 
 // ================== AI ARTICLE SUMMARY ==================
 app.post("/api/summarize", async (req, res) => {
+  if (!isApiKeyConfigured) {
+    return requireOpenAiKey(res);
+  }
+
   const { title, content, category, language, summaryLength } = req.body;
 
   if (!content) {
@@ -170,8 +197,16 @@ Please create a comprehensive summary of this news article.`
 
     const data = await response.json();
 
-    if (!response.ok || !data.choices || !data.choices[0]) {
-      throw new Error(`OpenAI API error: ${data.error?.message || 'Invalid response'}`);
+    if (!response.ok) {
+      console.error("OpenAI summarize API returned an error:", data);
+      return res.status(response.status).json({
+        error: data.error?.message || 'OpenAI summarize API error',
+        details: data
+      });
+    }
+
+    if (!data.choices || !data.choices[0]) {
+      throw new Error('Invalid OpenAI summarize response');
     }
 
     res.json({
@@ -186,7 +221,7 @@ Please create a comprehensive summary of this news article.`
   } catch (error) {
     console.error("Summarize API error:", error);
     res.status(500).json({
-      error: "Failed to generate summary",
+      error: error.message || "Failed to generate summary",
       summary: content.substring(0, 200) + "..." // fallback to truncated content
     });
   }

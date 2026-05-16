@@ -1,93 +1,141 @@
 # THE-CHRONICLE-a-news-website
-The Chronicle is an AI-powered premium news platform featuring live breaking news, multi-language support, voice narration, AI news analysis, smart search, and immersive reel-style short news content. Built with HTML, CSS, JavaScript, Node.js, Firebase, and Claude AI APIs.
-# The Chronicle — AI-Powered Global News Platform
 
-The Chronicle is a modern AI-enhanced digital newspaper platform built with a premium editorial design inspired by global publications like The New York Times, Financial Times, and The Economist — combined with next-generation interactive experiences inspired by modern social media platforms.
+The Chronicle is a premium AI-powered news platform built for fast, modern journalism. It combines editorial-style news storytelling with interactive short-form experiences, audio narration, multi-language support, and AI assistance for smarter reading.
 
-This project delivers a complete futuristic news ecosystem featuring:
+## Project Overview
 
-* AI-generated live news briefings
-* Multi-language support
-* Voice narration and audio news mode
-* Voice search functionality
-* Dark/light premium themes
-* Real-time breaking news ticker
-* Interactive article modal system
-* AI-powered reader assistant
-* Smart category filtering and search
-* Reel-style short news experience
-* Like, bookmark, and save systems
-* Responsive mobile-first design
-* Firebase + Google Cloud deployment support
-* Anthropic Claude AI API integration
-* Modern animations and immersive UI
+The Chronicle delivers a polished digital newspaper experience with features shaped for both desktop and mobile audiences:
 
-## Key Features
+* Interactive story cards and article modals
+* Vertical swipe News Reels for short-form content
+* Voice search and audio narration
+* AI-powered article simplification and summaries
+* Multi-language UI and Google Translate integration
+* Dark/light theme toggle
+* Smart search, filtering, and saved stories
+* Responsive, accessible, and premium editorial styling
 
-### Live News Experience
+## Core Features
 
-* Breaking news ticker
-* AI-generated current affairs section
-* Trending stories engine
-* Dynamic article rendering
+### AI-Powered Reading
 
-### AI Integration
+* **Language Simplification** - removes jargon, explains acronyms, and rewrites complex news text in plain language.
+* **AI Article Summaries** - generates concise, category-aware summaries with clear journalistic structure.
+* **AI assistant endpoints** - backend support at `/api/simplify` and `/api/summarize`.
 
-* Claude AI newsroom assistant
-* AI news analysis
-* Smart recommendations
-* Auto-generated summaries
+### Reader Experience
 
-### Accessibility & Interaction
+* **Article modal system** with embedded actions for simplify and summarize.
+* **News Reels** - immersive vertical swipe cards for quick highlights.
+* **Saved stories** and bookmark interactions.
+* **Dynamic story filtering** by category.
 
-* Audio narration mode
-* Speech synthesis support
-* Voice search
-* Keyboard navigation
-* Responsive layout
+### Accessibility & Interactivity
 
-### Modern Media Features
+* **Audio mode** using the Web Speech API for narration.
+* **Voice search** to query stories hands-free.
+* **Dark/light theme** toggle for comfortable reading.
+* **Keyboard navigation** and intuitive overlays.
 
-* Vertical swipe “News Reels”
-* Like and bookmark system
-* Smooth animations
-* Glassmorphism UI
-* Infinite scrolling support
+### Language & Translation
 
-### Deployment Ready
+* **Multi-language UI** support across menus and navigation.
+* **Google Translate integration** for on-page content translation.
 
-* Firebase Hosting support
-* Google Cloud Run backend
-* Secure API proxy architecture
-* Environment variable support
+### Modern UI
+
+* Premium editorial layout with glassmorphism and refined typography.
+* Smooth animations and hover states.
+* Responsive mobile-first design.
+
+## Architecture
+
+### Frontend
+
+* `public/index.html` - main news experience, search, categories, AI article tools, voice/audio controls.
+* `public/reels.html` - News Reels interface with AI simplify and summary actions.
+
+### Backend
+
+* `server.js` - Express server handling AI proxy requests.
+* `test-ai.js` - test script for AI endpoints.
+
+### Configuration
+
+* `.env` - stores `OPENAI_API_KEY` for AI integration.
+
+## Getting Started
+
+### Prerequisites
+
+* Node.js 18+ (or compatible runtime)
+* npm
+* OpenAI API key
+
+### Install
+
+```bash
+npm install
+```
+
+### Configure
+
+Create a `.env` file in the project root:
+
+```env
+OPENAI_API_KEY=sk-your-openai-api-key-here
+```
+
+### Deploy on Netlify
+
+This project can be deployed on Netlify using the static files in `public/` and the serverless API function in `netlify/functions/api.js`.
+
+1. Add `OPENAI_API_KEY` to your Netlify site environment variables.
+2. Push the repo to GitHub, GitLab, or another Git provider.
+3. On Netlify, create a new site and connect the repository.
+4. Netlify will publish `public/` and proxy `/api/*` to the serverless function via `netlify.toml`.
+
+> For local testing, install the Netlify CLI and run `netlify dev` from the project root.
+
+### Run the Server
+
+```bash
+node server.js
+```
+
+Open your browser at:
+
+```text
+http://localhost:8080
+```
+
+### Test AI Endpoints
+
+```bash
+node test-ai.js
+```
+
+This verifies both `/api/simplify` and `/api/summarize`.
+
+## Available Endpoints
+
+* `POST /api/simplify` - simplify article text
+* `POST /api/summarize` - generate an AI summary
+
+## Troubleshooting
+
+* If AI requests fail, confirm `OPENAI_API_KEY` is set correctly in `.env`.
+* If the server cannot start, ensure `package.json` has `"type": "module"`.
+* For browser issues, verify the backend is running on `http://localhost:8080`.
 
 ## Tech Stack
 
-Frontend:
-
-* HTML5
-* CSS3
-* Vanilla JavaScript
-
-Backend:
-
-* Node.js
-* Express.js
-
-Cloud & APIs:
-
-* Firebase Hosting
-* Google Cloud Run
-* Anthropic Claude API
-* Google Translate API
+* HTML5, CSS3, Vanilla JavaScript
+* Node.js, Express.js
+* OpenAI GPT-4o-mini
 * Web Speech API
+* Google Translate widget
 
-## Vision
+## Notes
 
-The Chronicle aims to redefine digital journalism by combining:
-
-* credibility of traditional newspapers,
-* intelligence of modern AI systems,
-* and engagement mechanics of short-form content platforms.
-
-This project is designed as a scalable foundation for the future of AI-assisted global media platforms.
+This project is designed as a foundation for modern digital journalism, blending editorial richness with AI-driven accessibility and short-form news engagement.
